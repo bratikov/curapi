@@ -1,0 +1,9 @@
+info:
+  contact:
+    email: alexander.bratikov@gmail.com
+    name: Alexander Bratikov
+  description: Currency API documentation
+  title: Currency API
+  version: "1.0"
+paths: {}
+swagger: "2.0"

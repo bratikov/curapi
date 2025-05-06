@@ -1,0 +1,26 @@
+{
+   "debug": false,
+   "secret": "KDSAJDFH#LKDFJLEEDFDJLSDF1",
+   "host": "0.0.0.0",
+   "port": 3000,
+   "base_url": "http://##SITENAME##",
+   "logs_db": {
+      "host": "##CLICKHOUSE_HOST##",
+      "port": "##CLICKHOUSE_PORT##",
+      "base": "##CLICKHOUSE_DBNAME##",
+      "username": "##CLICKHOUSE_USERNAME##",
+      "password": "##CLICKHOUSE_PASSWORD##"
+   },
+   "main_db": {
+      "host": "##MYSQL_HOST##",
+      "port": "##MYSQL_PORT##",
+      "base": "##MYSQL_DBNAME##",
+      "username": "##MYSQL_USERNAME##",
+      "password": "##MYSQL_PASSWORD##"
+   },
+   "storage_path": "/var/currency",
+   "logs": {
+      "filePath": "/tmp/currency.log",
+      "level": "debug"
+   }
+} 

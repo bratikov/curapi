@@ -1,0 +1,29 @@
+#!/bin/bash
+source $APPPATH/.project
+
+if [ -z "$APPENV" ] || [ ! -f "$APPPATH/.env.$APPENV" ]; then
+    echo "${RED}Application environmens is empty or .env.$APPENV does not exist, please check your configuration${RESET}"
+    exit 1
+fi
+
+if [ -z "$APPPATH" ]; then
+    echo "${RED}No APPPATH environment set, please run ./configure first${RESET}"
+    exit 1
+fi
+
+ENVPARAMS="-f docker-compose.yml"
+if [ "$APPENV" != "local"  ]; then
+    ENVPARAMS="$ENVPARAMS -f docker-compose.$APPENV.yml"
+fi
+BUILDARGS=""
+
+cp $APPPATH/.env.$APPENV $APPPATH/.env
+while IFS='=' read -r key value; do
+    if [ ! -z "$value" ]; then
+        BUILDARGS+="--build-arg $key=$value "
+    fi
+done < $APPPATH/.env
+echo -e "\\nENVPARAMS=\"$ENVPARAMS\"" >> $APPPATH/.env
+echo "BUILDARGS=\"$BUILDARGS\"" >> $APPPATH/.env
+cat $APPPATH/.project >> $APPPATH/.env
+source $APPPATH/.env

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+source .project
+source $APPPATH/bin/misc
+source $APPPATH/bin/env
+
+if [ -z "$APPPATH" ]; then
+    echo "${RED}No APPPATH environment set, please run ./configure first${RESET}"
+    exit 1
+fi
+
+read -p "${YELLOW}You are going to build on ${GREEN}${APPENV}${YELLOW} environment. Proceed? (y/n): ${RESET}" answer
+if [[ "$answer" == "n" ]]; then
+    echo "${RED}Aborted${RESET}"
+    exit 0
+fi
+
+echo "${YELLOW}Building containers${RESET}"
+docker compose $ENVPARAMS down
+docker compose $ENVPARAMS build $BUILDARGS
+docker compose $ENVPARAMS up -d
+wait_mysql
+echo "${YELLOW}Applying database migrations${RESET}"
+# todo
+echo "${WARN}Download pastor mods...${NORMAL}"
+docker compose $ENVPARAMS exec app sh -c "go mod download"
+echo "${GREEN}Done${RESET}"
+docker compose $ENVPARAMS ps
+echo "${GREEN}Application is ready${RESET}"

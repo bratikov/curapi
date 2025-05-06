@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+show_usage(){
+	echo "usage - $0 [target]"
+    echo "where: "
+    echo "   target:   [any]"
+	echo "             any target you want to build [stage, prod, whatever]"
+	echo "WARNING! Run this script just once for fresh installation"
+	exit 1
+}
+
+USER_DIR="/home/$(whoami)"
+APPPATH="$(pwd)"
+APPENV="local"
+source $APPPATH/bin/misc
+
+if [ -z "$1" ]; then
+    echo "${YELLOW}You want to configure with empty target, in this case app will use settings by default."
+    echo "This option is siutable for development environment."
+    read -p "Proceed? (y/n): ${RESET}" answer
+    if [[ "$answer" == "n" ]]; then
+        echo "${RED}Aborted${RESET}"
+        show_usage
+    fi
+else
+    APPENV=$1
+fi
+
+if [ ! -f ".env.$APPENV" ]; then
+    echo "${RED}No .env.$APPENV configuration file found. Create it first, fill it with necessary configuration, and try again.${RESET}"
+    exit 1
+fi
+  
+echo "APPPATH=$APPPATH" > .project
+echo "APPENV=$APPENV" >> .project
+
+read -p "${YELLOW}Enter your project FQDN (locahlost by default): ${RESET}" PROJECT_NAME
+if [ -z "$PROJECT_NAME" ]; then
+    PROJECT_NAME="localhost"
+fi
+echo "SITENAME=$PROJECT_NAME" >> .project
+
+source $APPPATH/bin/env
+echo "${GREEN}Base configuration is done!${RESET}"
+
+echo "${YELLOW}Preparing application environment config files${RESET}"
+find $APPPATH -type d \( -name .git -o -name volumes \) -prune -o -type f -name '*sample*' ! -name "*$APPENV*" -print | while read -r file; do
+  t=$(echo "$file" | sed "s/sample/$APPENV/")
+  echo $t
+  replace_placeholders "$file" "$t"
+done
+echo "${GREEN}Application environment configDone${RESET}"
+
+read -p "${YELLOW}Do you want to initialize empty database for your project? (y/n): ${RESET}" answer
+if [ "$answer" == "y" ]; then
+    echo "${YELLOW}Stopping all previously runned containers${RESET}"
+    docker compose $ENVPARAMS down
+    echo "${GREEN}Done${RESET}"
+    echo "${YELLOW}Building and starting MySQL container${RESET}"
+    docker compose $ENVPARAMS build $BUILDARGS mysql
+    docker compose $ENVPARAMS up -d mysql
+    echo "${GREEN}Done${RESET}"
+    wait_mysql
+    docker compose exec mysql bash -c "mysql -uroot -p${MYSQL_ROOT_PASSWORD} -e \"CREATE USER IF NOT EXISTS '${MYSQL_USERNAME}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';\" 2>&1 | grep -v Warning || true"
+    docker compose exec mysql bash -c "mysql -uroot -p${MYSQL_ROOT_PASSWORD} -e \"DROP DATABASE IF EXISTS ${MYSQL_DBNAME};\" 2>&1 | grep -v Warning || true"
+    docker compose exec mysql bash -c "mysql -uroot -p${MYSQL_ROOT_PASSWORD} -e \"CREATE DATABASE ${MYSQL_DBNAME} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;\" 2>&1 | grep -v Warning || true"
+    docker compose exec mysql bash -c "mysql -uroot -p${MYSQL_ROOT_PASSWORD} -e \"GRANT ALL on ${MYSQL_DBNAME}.* to '${MYSQL_USERNAME}'@'%';\" 2>&1 | grep -v Warning || true"
+    echo "${GREEN}Empty database created.${RESET}"
+    echo "${YELLOW}Stopping MySQL container${RESET}"
+    docker compose $ENVPARAMS down mysql
+    echo "${GREEN}MySQL container is down.${RESET}"
+fi
+
+echo -e "${GREEN}Configuration completed, please run ${YELLOW}./build${GREEN} to build containers and start application${RESET}"

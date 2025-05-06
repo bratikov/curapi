@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Currency",
+        "type": "go",
+        "request": "launch",
+        "mode": "auto",
+        "program": "${workspaceFolder}/cmd/main.go",
+        "args": ["run", "-c", "${workspaceFolder}/config/config.local.json"],
+        "dlvFlags": ["--check-go-version=false"],
+        "preLaunchTask": "Docs"
+      }
+    ]
+  }
+  

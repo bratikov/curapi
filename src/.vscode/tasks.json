@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Format",
+            "type": "shell",
+            "command": "swag",
+            "args": [
+                "fmt",
+                "-d",
+                "app",
+                "-g",
+                "server.go"
+            ],
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem",
+                "close": true
+            }
+        },
+        {
+            "label": "Generate",
+            "type": "shell",
+            "command": "swag",
+            "args": [
+                "init",
+                "--pd",
+                "--parseInternal",
+                "-d",
+                "app",
+                "-g",
+                "server.go"
+            ],
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem",
+                "close": true
+            }
+        },
+        {
+            "label": "Docs",
+            "dependsOn": [
+                "Format",
+                "Generate"
+            ],
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem",
+                "close": true
+            }
+        }
+    ]
+}

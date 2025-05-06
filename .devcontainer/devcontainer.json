@@ -1,0 +1,17 @@
+{
+	"name": "Currency",
+	"dockerComposeFile": [
+		"../docker-compose.yml"
+	],
+	"service": "app",
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"eamodio.gitlens",
+				"golang.go"
+			]
+		}
+	},
+	"workspaceFolder": "/go/src"
+}

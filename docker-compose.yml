@@ -1,0 +1,78 @@
+services:
+  mysql:
+    build: docker/mysql
+    container_name: mysql
+    hostname: mysql
+    volumes:
+      - ./volumes/mysql/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    networks:
+      - appnet
+    restart: always
+
+  pma:
+    image: phpmyadmin:latest
+    container_name: pma
+    hostname: pma
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+    ports:
+      - 127.0.0.1:50081:80
+    networks:
+      - appnet
+    depends_on:
+      - mysql
+    restart: always
+
+  swagger:
+    image: swaggerapi/swagger-ui:latest
+    container_name: swagger
+    hostname: swagger
+    ports:
+      - 127.0.0.1:50082:8080
+    volumes:
+      - ./docs/swagger.json:/v1.json
+    environment:
+      - SWAGGER_JSON=/v1.json
+    networks:
+      - appnet
+    restart: always
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.4.2.31-alpine
+    container_name: clickhouse
+    hostname: clickhouse
+    volumes:
+      - ./volumes/clickhouse/data:/var/lib/clickhouse
+      - ./docker/clickhouse/logger.xml:/etc/clickhouse-server/config.d/logger.xml
+    ports:
+      - 127.0.0.1:50023:8123
+    environment:
+      - CLICKHOUSE_DB=${CLICKHOUSE_DBNAME}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USERNAME}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+    networks:
+      - appnet
+    restart: always
+
+  app:
+    build: docker/app
+    container_name: app
+    hostname: app
+    ports:
+      - 127.0.0.1:50080:3000
+    volumes:
+      - ./src:/go/src
+    networks:
+      - appnet
+    depends_on:
+      - mysql
+      - clickhouse
+    restart: always
+
+networks:
+  appnet:
+    name: appnet
+    driver: bridge

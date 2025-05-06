@@ -1,0 +1,13 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Currency API documentation",
+        "title": "Currency API",
+        "contact": {
+            "name": "Alexander Bratikov",
+            "email": "alexander.bratikov@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "paths": {}
+}
